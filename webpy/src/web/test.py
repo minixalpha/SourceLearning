@@ -48,4 +48,3 @@ def main(suite=None):
 
     result = runTests(suite)
     sys.exit(not result.wasSuccessful())
-

@@ -2,6 +2,9 @@
 
 # ...
 
+# here is an article about setup.py file
+# url: http://minixalpha.github.io/StrayBirds/%E6%8A%80%E6%9C%AF/2013/11/01/pypkg.html
+
 from distutils.core import setup
 from web import __version__
 
