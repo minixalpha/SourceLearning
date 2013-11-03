@@ -62,6 +62,8 @@ def main(suite=None):
 
 果然是运行修改后的函数
 
+另外，注意 `test.py` 中的 suite 在 
+
 ## requirements.txt
 
 requirements.txt 文件可由 pip 生成：
@@ -77,6 +79,50 @@ requirements.txt 文件可由 pip 生成：
 ## 分模块测试
 
 ### application.py
+
+对 web.py 应用的一个测试，会生成一个 foo.py 文件
+
+```python
+import web
+
+urls = ("/", "c")
+app = web.application(urls, globals(), autoreload=True)
+
+class c:
+    def GET(self):
+        return "c"
+
+```
+
+程序入口依然会调用 `webtest.main()`
+
+```python
+if __name__ == '__main__':
+    webtest.main()
+```
+
+再仔细观察 `webtest.main` 调用的 `web.test` 中的 `main`函数
+
+```python
+def main(suite=None):
+    if not suite:
+        main_module = __import__('__main__')
+        # allow command line switches
+        args = [a for a in sys.argv[1:] if not a.startswith('-')]
+        suite = module_suite(main_module, args or None)
+
+    result = runTests(suite)
+    sys.exit(not result.wasSuccessful())
+```
+
+当我们如果我们打印 `main_module`，会得到
+
+    <module '__main__' from 'test/application.py'>
+
+这说明分模块调用时，`import` 得到的 `main` 与命令行调用时，
+调用的模块一致。
+
+之后会调用 `module_suite` 得到需要测试的 
 
 ### browser.py
 
