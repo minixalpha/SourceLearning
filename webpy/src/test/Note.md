@@ -62,7 +62,60 @@ def main(suite=None):
 
 果然是运行修改后的函数
 
-另外，注意 `test.py` 中的 suite 在 
+另外，当我们如果我们打印 `main_module`，会得到
+
+    <module '__main__' from 'test/alltests.py'>
+
+这说明分模块调用时，`import` 得到的 `main` 与命令行调用时，
+调用的模块一致。
+
+之后会调用 `module_suite` 得到需要测试的模块,
+
+我们看一下 `module_suite` 的代码，
+
+```python
+def module_suite(module, classnames=None):
+    """Makes a suite from a module."""
+    if classnames:
+        return unittest.TestLoader().loadTestsFromNames(classnames, module)
+    elif hasattr(module, 'suite'):
+        return module.suite()
+    else:
+        return unittest.TestLoader().loadTestsFromModule(module)
+```
+
+可以看出，module_suite分三部分，如果定义了 `classnames`，
+会测试具体的类，否则，如果 `module` 中含有 `suite` 函数，
+就返回此 `module.suite()` 的调用结果。
+
+此时我们的 `module` 是之前得到的 
+
+    <module '__main__' from 'test/alltests.py'>
+
+而 `alltests.py` 中刚好就有 `suite` 函数：
+
+```python
+def suite():
+    modules = ["doctests", "db", "application", "session"]
+    return webtest.suite(modules)
+```
+
+并且会返回全部模块的一个列表。
+
+然后 `test.py` 中的 `main` 函数会对这个列表调用 `runTests`,
+
+
+```python
+def runTests(suite):
+    runner = unittest.TextTestRunner()
+    return runner.run(suite)
+```
+
+这里调用了 `unittest` 中的函数来测试，并且刚才 `module_suite`
+中其它两种情况也是调用了 `unittest` 中的函数来测试。
+
+于是，我们不可避免地要学习 `unittest` 模块的基本使用，
+然后才能开始下一部源代码阅读。
 
 ## requirements.txt
 
@@ -115,14 +168,6 @@ def main(suite=None):
     sys.exit(not result.wasSuccessful())
 ```
 
-当我们如果我们打印 `main_module`，会得到
-
-    <module '__main__' from 'test/application.py'>
-
-这说明分模块调用时，`import` 得到的 `main` 与命令行调用时，
-调用的模块一致。
-
-之后会调用 `module_suite` 得到需要测试的 
 
 ### browser.py
 
