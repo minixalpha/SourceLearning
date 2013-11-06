@@ -473,7 +473,7 @@ def handle_class(cls):
     if not hasattr(cls, meth):
         raise web.nomethod(cls)
     tocall = getattr(cls(), meth)
-    return tocall(*args)
+    return tocall(\*args)
 ```
 
 参数`cls`值为`foo.a`, `meth` 会得到方法名 `GET`, 然后
