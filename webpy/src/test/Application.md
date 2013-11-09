@@ -549,3 +549,258 @@ start_resp(status, headers)
 ```
 
 前者设置 `status` 和 `headers`，后者调用 `requests` 函数中的 `start_response` 对 `response` 的状态进行了设置。最后返回给最一开始 `testUppercaseMethods` 中的 `response`。
+
+
+* 3. testRedirect
+
+```python
+    def testRedirect(self):
+        urls = (
+            "/a", "redirect /hello/",
+            "/b/(.*)", r"redirect /hello/\1",
+            "/hello/(.*)", "hello"
+        )
+        app = web.application(urls, locals())
+        class hello:
+            def GET(self, name): 
+                name = name or 'world'
+                return "hello " + name
+            
+        response = app.request('/a')
+        self.assertEquals(response.status, '301 Moved Permanently')
+        self.assertEquals(response.headers['Location'], 'http://0.0.0.0:8080/hello/')
+
+        response = app.request('/a?x=2')
+        self.assertEquals(response.status, '301 Moved Permanently')
+        self.assertEquals(response.headers['Location'], 'http://0.0.0.0:8080/hello/?x=2')
+
+        response = app.request('/b/foo?x=2')
+        self.assertEquals(response.status, '301 Moved Permanently')
+        self.assertEquals(response.headers['Location'], 'http://0.0.0.0:8080/hello/foo?x=2')
+```
+
+看到这段代码首先对 `urls` 挺好奇的，`urls` 一般是一个 `url` 对应
+一个处理它的类，可是 `redirect /hello/` 是什么意思？所以，我们
+有必要看一下 `web.application` 如何对 `urls` 进行处理。
+
+我们还从这句开始：
+
+```python
+response = app.request('/a')
+```
+
+看看 `urls` 是如何被处理的。
+
+```python
+# web.application.request
+
+def request(self, localpart='/', method='GET', data=None,
+            host="0.0.0.0:8080", headers=None, https=False, **kw):
+
+
+    path, maybe_query = urllib.splitquery(localpart)
+    query = maybe_query or ""
+
+    ...
+
+    env = dict(env, HTTP_HOST=host, REQUEST_METHOD=method, PATH_INFO=path, QUERY_STRING=query, HTTPS=str(https))
+
+    ...
+
+    response.data = "".join(self.wsgifunc()(env, start_response))
+
+```
+
+可以看出，请求的 `url` 被分成两部分： `path` 和 `maybe_query`, 
+然后传入 `env`中。
+
+`urllib` 是标准库的一部分，但是在文档中没有对 `splitquery`
+有说明，这可能是一个非公开的API。通过
+
+    >>> help(urllib.splitquery)
+
+可以得到
+
+    splitquery('/path?query') --> '/path', 'query'
+
+看来这个调用是把 `url` 请求分成路径与请求两个部分，这也和
+返回结果的赋值保持一致。
+
+另外，最好不要使用这个函数，python 2.7 中提供了 `urlparse`
+模块，可以完成同样功能（甚至更多），python 3 中这个模块
+更改为 `urllib.parse`。
+
+这里不再多说，只是明白这一句是要做什么就好。我们继续看数据
+封装在 `env` 后发生的故事。
+
+我们又来到这里：
+
+```python
+    response.data = "".join(self.wsgifunc()(env, start_response))
+```
+
+最终对 `env` 的处理在 `wsgi` 函数中。
+
+```python
+# web.application.wsgifunc.wsgi
+
+        def wsgi(env, start_resp):
+            # clear threadlocal to avoid inteference of previous requests
+            self._cleanup()
+
+            self.load(env)
+            try:
+                # allow uppercase methods only
+                if web.ctx.method.upper() != web.ctx.method:
+                    raise web.nomethod()
+
+                result = self.handle_with_processors()
+                if is_generator(result):
+                    result = peep(result)
+                else:
+                    result = [result]
+            except web.HTTPError, e:
+                result = [e.data]
+
+
+            result = web.safestr(iter(result))
+
+            status, headers = web.ctx.status, web.ctx.headers
+
+            start_resp(status, headers)
+```
+
+同样，先把 `env` 载入 `web.ctx`， 然后我们通过 `print` 定位到
+这一句改变了 `web.ctx.status` 的值。 
+
+```
+                result = self.handle_with_processors()
+```
+
+可见这里对 `url` 进行了分析。下面我们深入下去。
+
+```python
+# web.application.handle_with_processors
+
+def handle_with_processors(self):
+    def process(processors):
+        try:
+            if processors:
+                p, processors = processors[0], processors[1:]
+                return p(lambda: process(processors))
+            else:
+                return self.handle()
+        except web.HTTPError:
+            raise
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            print >> web.debug, traceback.format_exc()
+            raise self.internalerror()
+    
+    # processors must be applied in the resvere order. (??)
+    return process(self.processors)
+```
+
+这里 `processors` 为空，所以进入 `self.handle()`
+
+```python
+# web.application.handle
+
+def handle(self):
+fn, args = self._match(self.mapping, web.ctx.path)
+return self._delegate(fn, self.fvars, args)
+```
+
+这个 `self.mapping` 是将我们的 `urls` 转化成两两一组后的列表。
+先看看 `_match`函数。
+
+```python
+def _match(self, mapping, value):
+    for pat, what in mapping:
+        if isinstance(what, application):
+            if value.startswith(pat):
+                f = lambda: self._delegate_sub_application(pat, what)
+                return f, None
+            else:
+                continue
+        elif isinstance(what, basestring):
+            what, result = utils.re_subm('^' + pat + '$', what, value)
+        else:
+            result = utils.re_compile('^' + pat + '$').match(value)
+            
+        if result: # it''s a match
+            return what, [x for x in result.groups()]
+    return None, None
+```
+
+可以看出这是一个循环，根据当前的 `value` ，即 `web.ctx.path`
+去查找 `urls` 中定义的对应项。what就是这个项。
+先使用 `isinstance(what, application)` 看是不是使用了子程序。
+再看看what是不是 `basestring` 的实例。当前的运行就会选择这一分支。
+即：
+
+```python
+elif isinstance(what, basestring):
+    what, result = utils.re_subm('^' + pat + '$', what, value)
+```
+
+`utils.re_subm` 对路径中的正则表达式进行处理。`pat` 和 `what`
+是 `urls` 中对应的项， `value` 是当前的请求路径。
+
+```python
+# utils.re_subm
+
+def re_subm(pat, repl, string):
+    """
+    Like re.sub, but returns the replacement _and_ the match object.
+    
+        >>> t, m = re_subm('g(oo+)fball', r'f\\1lish', 'goooooofball')
+        >>> t
+        'foooooolish'
+        >>> m.groups()
+        ('oooooo',)
+    """
+    compiled_pat = re_compile(pat)
+    proxy = _re_subm_proxy()
+    compiled_pat.sub(proxy.__call__, string)
+    return compiled_pat.sub(repl, string), proxy.match
+
+```
+
+这里 `re_compile(pat)` 的含义与 `re.complie(pat)` 类似，
+返回一个`RegexObject` 对象，只不过加入了 `Cache` 机制，避免
+多次执行 `re.complie` 调用。
+
+下面看这两行代码
+
+```python
+proxy = _re_subm_proxy()
+compiled_pat.sub(proxy.__call__, string)
+```
+
+其中 `_re_subm_proxy` 定义为：
+
+```python
+class _re_subm_proxy:
+    def __init__(self): 
+        self.match = None
+    def __call__(self, match): 
+        self.match = match
+        return ''
+```
+
+`compiled_pat` 会与 `string` 一起生成一个 `Match` 对象，
+这个对象会存储在一个 `_re_subm_proxy` 对象，即 `proxy`中
+我们可以看到 `return` 中，`proxy` 最后会将其 `match` 返回。
+我在想，为什么不直接生成一个 `Match`  对象然后返回呢？
+查了一下，这似乎与 `代理模式` 相关。但具体为什么还不知道。
+
+又查了很久，似乎又与 `弱引用`, 和之前的 Cache 相关。
+
+最后的 `return` 语句返回两个值，其中
+`compiled_pat.sub (repl, string)` 是把 `string` 与 `pat`
+中匹配的部分，用于替换 `repl` 中对应的组号。
+
+关于 `Python 正则表达式` 可以参考这篇：
+[Python 正则表达式指南](http://www.cnblogs.com/huxi/archive/2010/07/04/1771073.html)
