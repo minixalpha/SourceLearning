@@ -1,12 +1,13 @@
 # web.py 项目之 skeleton
 
 ## 目录树
+```
 .
-├── Node.md
-└── src
-    ├── code.py
-    ├── config.py
-    ├── db.py
+├── Node.md  
+└── src  
+    ├── code.py  
+    ├── config.py  
+    ├── db.py  
     ├── sql
     │   └── tables.sql
     ├── templates
@@ -16,6 +17,7 @@
     └── view.py
 
 3 directories, 9 files
+```
 
 ## 结构分析
 
