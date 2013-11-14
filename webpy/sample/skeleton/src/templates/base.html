@@ -1,0 +1,9 @@
+$def with (page, title=None)
+<html><head>
+<title>my site\
+$if title: : $title\
+</title>
+</head><body>
+<h1><a href="/">my site</a></h1>
+$:page   
+</body></html>
