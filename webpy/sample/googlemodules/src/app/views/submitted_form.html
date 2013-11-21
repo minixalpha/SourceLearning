@@ -1,0 +1,29 @@
+$def with (success, module_id='', type='comment', err_msg='')
+
+$if type == 'submit':
+    <h2>Submit your module</h2>
+    $if success:
+        <p>Thanks for your submission <a href="/">Back to the homepage...</a></p>
+    $else:
+        <p class="error">$:err_msg</p>
+$elif type == 'vote':
+    <h2>Submit vote</h2>
+    $if success:
+        <p>Thanks for your vote!  <a href="/module/$module_id/">Back to the module...</a></p>
+    $else:
+        <p class="error">Please go back to submit a vote from 0 to 5 stars.</p>
+$elif type == 'comment':
+    <h2>Submit comment</h2>
+    $if success:
+        <p>Thanks for your comment!  <a href="/module/$module_id/">Back to the module...</a></p>        
+    $else:
+        $if err_msg:
+            <p>$:err_msg</p>
+        $else:
+            <p class="error">Please go back to insert both your name and a comment.</p>
+$else:
+    <h2>Feedback</h2>
+    $if success:
+        <p>Thanks for your feedback! <a href="/">Back to the homepage...</a></p>        
+    $else:
+        <p class="error">Ooops! Please go back to enter both your email and a comment.</p> 

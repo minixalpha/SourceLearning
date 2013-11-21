@@ -1,0 +1,12 @@
+$def with (cloud)
+
+<div class="authorPage">
+<h2 class="mainHeadline">Authors</h2>
+<p class="tagCloud">
+$for author, count in cloud:
+    $ size = 90 + (count-1) * 10
+    <a href="/author/$url_quote(author)/" style="font-size: $size%">$:html_quote_plus(cut_length(author, 80))</a>&nbsp; 
+</p>
+    
+<p class="nextPage onTagCloud"><a href="/tags/">&gt;&gt;View tags...</a></p>
+</div>

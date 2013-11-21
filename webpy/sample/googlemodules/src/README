@@ -1,0 +1,7 @@
+Google Modules is an iGoogle gadget directory that was released in December 2005 (months before Google released their own). It achieved about 1700 del.icio.us bookmarks and receives about 10 modules submission every day.
+
+Google Modules: http://www.googlemodules.com
+
+The first version of Google Modules was written in PHP by Philipp Lenssen and Alex Ksikes over a week end. 
+
+It has been rewritten in Python (using webpy http://webpy.org) by Alex Ksikes and now is released open source under AGPL for educational purposes.

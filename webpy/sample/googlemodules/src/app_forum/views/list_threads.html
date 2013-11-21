@@ -1,0 +1,43 @@
+$def with (threads, next_page_url='', sub_title='Share your thoughts')
+
+<h2>$sub_title</h2>
+
+<div class="forum">
+$for thread in threads:
+    <div class="threadTitle
+    $if loop.even: alternative
+    ">
+        <strong><a href="/forum/thread/$thread.id/">$thread.title</a></strong><br />
+        <span class="authorDetails">$thread.author <span class="recent">$how_long(thread.datetime_created)&nbsp;
+        $if thread.no_replies:
+            ($thread.no_replies replies, last reply <span class="recent">$how_long(thread.last_reply_datetime))</span>
+        $else:
+            (0 replies)
+        </span>
+    </div>
+     
+$if next_page_url:
+    <div class="nextPage">
+        <a href="/forum/$next_page_url">&gt;&gt;Next page...</a> &nbsp;
+    </div>
+
+    <div class="startNewThread">
+        <h3>Start a new thread</h3>
+        <form action="/forum/new/" method="post">
+        <div>
+            <table>
+                <tr>
+                    <td>Your name:</td><td><input type="text" name="author" size="50" /></td>
+                </tr>
+                <tr>
+                    <td>Title:</td><td><input type="text" name="title" size="50" />
+                </tr>
+            </table>
+                    
+            <textarea cols="75" rows="6" name="content"></textarea><br />
+            
+            <p class="submitButton"><input type="submit" value="Submit" /></p>
+        </div>
+        </form>
+    </div>
+</div>

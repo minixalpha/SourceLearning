@@ -1,0 +1,10 @@
+$def with (cloud)
+
+<h2>Tags</h2>
+<p class="tagCloud">
+$for tag, count in cloud:
+    $ size = 10 + count * 20
+    <a href="/tag/$tag/" style="font-size: $size%">$cut_length(tag, 50)</a>&nbsp; 
+</p>
+    
+<p class="nextPage onTagCloud"><a href="/authors/">&gt;&gt;View authors...</a></p>

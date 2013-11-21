@@ -1,0 +1,27 @@
+$def with (modules, next_page_url='', sub_title='Latest Modules')
+
+$# TODO:
+$# - no misc_toXml, no cutLength
+
+<h2>$sub_title</h2>
+$if not modules:
+    <p>No results found.</p>
+
+$for module in modules:
+    <div class="previewModule">
+        <div class="screenshot">
+            <a href="/module/$module.id/"><img src="/img/screenshot/$module.screenshot" alt="" /></a>
+        </div>
+        
+        <div class="title">
+            <strong><a href="/module/$module.id/">$cut_length(module.title)</a></strong>
+        
+            &nbsp;<span class="author">($module.author)</span>
+        </div>
+        <div class="description">$cut_length(module.description, 200)</div>
+        
+        <div class="addLink"><a href="http://www.google.com/ig/add?moduleurl=$module.url">&gt;&gt;Add module</a></div>
+    </div>
+
+$if next_page_url:
+    <div class="nextPage"><a href="$next_page_url">&gt;&gt;Next page...</a></div>

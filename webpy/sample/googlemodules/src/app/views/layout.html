@@ -1,0 +1,94 @@
+﻿$def with (page, popular_modules, random_modules, latest_comments, by='Ksikes / Lenssen', mode='mode', title='Google Modules', query='')
+
+$# TODO:
+$# - make generic analytics and stat counter
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
+    <title>$title</title>
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="/rss/latest.xml" />
+    <link rel="stylesheet" href="/css/default.css" type="text/css" media="screen, projection, print" />
+    <link rel="icon" type="image/png" href="/img/favicon.ico" />
+    <script type="text/javascript" src="/js/default.js"></script>
+</head>
+
+<body class="$mode">
+<div class="page">
+
+<div class="content">
+<h1><a href="/"><img src="/img/logo.gif" alt="Google Modules - Get Google Personalized Homepage Content" /></a></h1>
+<!--
+    <div class="whatsNew">New: <a href="/forum/thread/400/">Add to site</a>...</div>
+-->
+    <div class="innerContent">
+    $:page
+    
+    <div class="footer">
+        <a href="/about/">About</a> | <a href="/feedback/">Feedback</a> | <a href="/help/">FAQ</a> | <a href="/rss/latest.xml">RSS of Latest Modules</a><br />
+        <span class="copyright">By $by[0]/ $by[1]. Modules/ gadgets/ widgets by respective author.<br />Not affiliated with Google&trade;. Enjoy!</span>
+    </div>
+
+    </div>
+</div>
+
+<div class="context">
+<div class="links">
+    <p class="submit"><a href="/submit/"><img src="/img/submit-module.gif" alt="&gt;&gt; Submit module" /></a></p>
+    <form action="/search" method="get">
+        <div class="searchForm">
+        <input type="text" name="q" size="12" value="$query" class="searchBox" />
+        <input type="submit" value="Search" class="searchButton" />
+$#        <input type="hidden" name="mode" value="showSearchResults" />
+        </div>
+    </form>
+   <div class="importantLinks">
+        <a href="/tags/">View tags</a> | <a href="/modules/">All modules</a><br />
+        <!--<span style="font-size: 12px"><img src="/img/bubble.gif" alt="" />&nbsp;<a href="/forum/">Share your thoughts</a></span>-->
+   </div>
+    
+    <strong>Most Popular</strong><br />
+    <ol>
+    $for module in popular_modules:
+        <li><a href="/module/$module.id/">$cut_length(module.title)</a></li>
+    </ol><br />
+    
+    <strong>Random Modules</strong><br />
+    <ul class="randomModules">
+    $for module in random_modules:
+        <li><a href="/module/$module.id/">$cut_length(module.title)</a></li>
+    </ul>
+        
+    <div class="latestComments">
+    <strong>Latest Comments</strong><br />
+    <ul>
+    $for comment in latest_comments:
+        <li><a href="/module/$comment.module_id">$cut_length(comment.content, 35)</a></li>
+    </ul>
+    </div>            
+</div>
+</div>
+
+</div>
+
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-60595-15";
+urchinTracker();
+</script>
+
+<!-- Start of StatCounter Code -->
+<script type="text/javascript" language="javascript">
+var sc_project=1986092; 
+var sc_invisible=1; 
+var sc_partition=18; 
+var sc_security="34b40771"; 
+</script>
+<script type="text/javascript" language="javascript" src="http://www.statcounter.com/counter/counter.js"></script><noscript><a href="http://www.statcounter.com/" target="_blank"><img  src="http://c19.statcounter.com/counter.php?sc_project=1986092&java=0&security=34b40771&invisible=1" alt="javascript hit counter" border="0"></a> </noscript>
+<!-- End of StatCounter Code -->
+
+</body>
+</html>
+    

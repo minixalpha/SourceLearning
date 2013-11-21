@@ -1,0 +1,57 @@
+1) Download the latest tar ball: http://github.com/alexksikes/googlemodules/tarball/master.
+
+2) tar xvzf "the tar ball".
+
+3) Download install webpy, follow instructions here: http://webpy.org/install.
+
+4) Setup lighttpd, here is a part your config file:
+
+    ...
+
+    name = "googlemodules"
+    app = "path to ./application.py"
+
+    server.document-root = "path to ./public/"
+
+    url.rewrite += (
+        # Commented for development
+        "^/img/(.*)$" => "/img/$1",
+        "^/css/(.*)$" => "/css/$1",
+        "^/js/(.*)$" => "/js/$1",
+
+        "^/(.*)$" => app + "/$1",
+    )
+
+    fastcgi.server += ( script =>
+    ((
+        "socket" => "/tmp/" + name + var.PID + ".socket",
+        "bin-path" => script,
+        "check-local" => "disable",
+        "max-procs" => 1,
+        "bin-environment" => (
+            "REAL_SCRIPT_NAME" => ""
+        ),
+    ))
+    )
+
+    ...
+
+5) Setup your database: 
+
+    mysql -p googlemodules < ./sql/schema.sql
+
+6) Go over your site settings: 
+
+    Go over config_example.py and rename it config.py
+
+7) Give lighttpd write permission:
+
+    sudo chgrp www-data img/screenshot; chmod 775 img/screenshot;
+    sudo chgrp www-data rss/; chmod 775 rss/;
+
+8) Install python depencies if you don't already have them:
+
+    PycURL : http://pycurl.sourceforge.net/ 
+    lxml   : http://codespeak.net/lxml/
+
+9) Restart lighttpd and you're done!

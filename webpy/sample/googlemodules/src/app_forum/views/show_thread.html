@@ -1,0 +1,31 @@
+﻿$def with (thread, conversation)
+
+<h2>$thread.title &nbsp;<span class="subtitle">$format_date(thread.datetime_created, '%m/%d/%y')</span></h2>
+
+<div class="forum thread">
+    $for t in conversation:
+        <div class="comment">
+            <div class="commentContent">$:text2html(t.content)</div>
+            <div class="commentAuthor">&#8211; $t.author $how_long(t.datetime_created)</div>
+        </div>
+    
+    <h3>Reply</h3>
+            
+    <form action="./reply/" method="post">
+    <div>
+        <table>
+        <tr>
+            <td>Your name:</td><td><input type="text" name="author" size="50" /></td>
+        </tr>
+        </table>
+        
+        <textarea cols="75" rows="6" name="content"></textarea><br />
+
+        <p class="submitButton"><input type="submit" value="Submit" /></p>
+        
+        <input type="hidden" name="reply_to" value="$thread.id" />
+    </div>
+    </form>
+</div>
+
+<p class="lastPage"><a href="/forum/">&lt;&lt; Forum home</a></p>

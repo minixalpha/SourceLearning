@@ -1,0 +1,27 @@
+﻿$def with (modules)
+<?xml version="1.0" encoding="utf-8" ?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+
+<channel>
+
+<title>Latest Google Modules</title>
+<link>http://www.googlemodules.com</link>
+<description>Get Google Personalized Homepage Content</description>
+<language>en</language>
+<copyright>By Ksikes/ Lenssen</copyright>
+
+<pubDate>$httpdate(modules[0].datetime_created)</pubDate>
+
+$for module in modules:
+    <item>
+    <title>$module.title</title>
+    <link>http://www.googlemodules.com/module/$module.id/</link>
+    <guid>http://www.googlemodules.com/module/$module.id/</guid>
+    <pubDate>$httpdate(module.datetime_created)</pubDate>
+    <description>$strip_tags(module.description)</description>
+    <content:encoded><![CDATA[$strip_tags(module.description)]]></content:encoded>
+    </item>
+
+</channel>
+
+</rss>

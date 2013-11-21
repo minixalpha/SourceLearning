@@ -1,0 +1,135 @@
+﻿$def with (module, tags, comments, related_module, pub_id)
+
+$def show_vote_icons(vote, small_icons=False):
+    $ prefix = small_icons and 'small-' or ''
+    
+    $for i in range(1, 6):
+        $if vote >= i:
+            <img src="/img/star/$(prefix)full.gif" alt="X" />\
+        $elif vote >= i - 0.5:
+            <img src="/img/star/$(prefix)half.gif" alt=">" />\
+        $else:
+            <img src="/img/star/$(prefix)empty.gif" alt="_" />\
+    \
+
+$def author_details(affiliation, email):
+    $if affiliation:
+        , $affiliation
+    $if email:
+         &bull; <a href="mailto:$email">Email the author</a>
+   
+$def show_adsense():
+    <script type="text/javascript"><!--
+    google_ad_client = "$pub_id";
+    google_ad_width = 468;
+    google_ad_height = 60;
+    google_ad_format = "468x60_as";
+    google_ad_type = "text";
+    google_ad_channel ="9681339501";
+    google_color_border = "EEEEEE";
+    google_color_bg = "FFFFFF";
+    google_color_link = "159532";
+    google_color_url = "D37108";
+    google_color_text = "000000";
+    //--></script>
+    <script type="text/javascript"
+      src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+    </script>
+        
+<div class="standaloneModule">
+    <h2>$module.title 
+    $if module.title_url:
+        <span class="subtitle">(<a href="$module.title_url" rel="nofollow">$get_nice_url(module.title_url)</a>)</span>
+    
+    $if module.calculated_vote > -1:
+        <br />
+        $:show_vote_icons(module.calculated_vote)
+    </h2>
+    
+    <p class="screenshot">
+    <div id="screenshot">
+        <img src="/img/screenshot/$module.screenshot" alt="" /><br />
+        <span class="livePreviewLink">
+        <a href="javascript:showLivePreview('http://gmodules.com/ig/ifr?synd=googlemodules&amp;w=320&amp;h=280&amp;mid=0&amp;url=$module.url')">Play with live preview</a>
+        </span>
+    </div>
+
+    <div id="livePreview">
+        <iframe id="previewFrame" frameborder="0" border="0" src="about:blank"></iframe><br />
+        <span class="livePreviewLink"><a href="javascript:hideLivePreview()">Hide live preview</a></span>
+    </div>
+    </p>
+
+    <p class="description">$module.description</p>
+
+    <div>
+    <strong>Author: </strong> 
+    <a href="/author/$url_quote(module.author)/">$module.author</a><span class="authorDetail">$:author_details(module.author_affiliation, module.author_email)</span>
+    </div>
+        
+    <div class="source">
+    <strong>Source:</strong> 
+    <a href="$module.url" rel="nofollow">View XML</a>
+    </div>
+
+    $if module.render_inline:
+        <p class="renderInline">This module must be <a href="/help/#inlined">inlined</a>.</p>
+
+    <div class="tags">
+    $if tags:
+        <strong>Tags:</strong>
+        $for tag in tags:
+            <a href="/tag/$tag.tag/">$tag.tag</a> 
+    </div>
+
+    <form action="/module/$module.id/vote/" method="post"><div class="vote">
+    Vote:
+    <select name="vote">
+        <option value=""></option>
+        <option value="-5" />Spam/ unsafe</option>
+        <option value="0" />0 stars (worst)</option>
+        <option value="1" />1 star</option>
+
+        <option value="2" />2 stars</option>
+        <option value="3" />3 stars</option>
+        <option value="4" />4 stars</option>
+        <option value="5" />5 stars (best)</option>
+    </select>
+    <input type="submit" value="Submit" />
+    </div>
+    </form>
+    
+    <div class="addLink"><a href="http://www.google.com/ig/add?moduleurl=$module.url">&gt;&gt;Add module</a><br />
+    <span class="addToSiteLink">or <a href="javascript:toggleElm('addToSite')">add to site</a></span>
+    </div>
+
+    <div id="addToSite">
+        <div class="addToSiteClose"><a href="javascript:hideElm('addToSite')"><img src="/image/close.png" alt="Close" /></a></div>
+        <div>Copy &amp; paste this code into your site:</div>
+        <textarea>&lt;script src=&quot;http://gmodules.com/ig/ifr?url=$module.url&amp;amp;synd=open&amp;amp;w=320&amp;amp;h=180&amp;amp;title=$html_quote_plus(module.title)&amp;amp;border=%23ffffff%7C3px%2C1px+solid+%23999999&amp;amp;output=js&quot;&gt;&lt;/script&gt;</textarea>
+    </div>
+</div>
+
+$:show_adsense()
+
+$if related_module:
+    <div class="nextPage nextModule">Related module: 
+        <a href="/module/$related_module.id/">$cut_length(related_module.title)</a>
+    </div>    
+    
+<h3>Comments</h3>
+
+$for comment in comments:
+    <div class="comment">
+        <div class="commentContent">$:text2html(comment.content)</div>
+        <div class="commentAuthor">&#8211; $comment.author $how_long(comment.datetime_created)</div>
+    </div>
+
+<form action="/module/$module.id/comment/" method="post">
+<div>
+    Your name: <input type="text" name="author" size="30" /><br />
+    <textarea cols="84" rows="6" name="comment"></textarea><br />
+
+    <p class="submitButton"><input type="submit" value="Submit" /></p>
+</div>
+</form>

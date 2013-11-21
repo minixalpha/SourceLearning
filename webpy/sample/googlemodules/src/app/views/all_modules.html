@@ -1,0 +1,71 @@
+$def with (modules, total, order_by='title', next_page_url='', sub_title='Page 1')
+
+$# TODO:
+$# - show_vote_icons should be globally accessible
+
+$def show_vote_icons(vote, small_icons=False):
+    $ prefix = small_icons and 'small-' or ''
+    
+    $for i in range(1, 6):
+        $if vote >= i:
+            <img src="/img/star/$(prefix)full.gif" alt="X" />\
+        $elif vote >= i - 0.5:
+            <img src="/img/star/$(prefix)half.gif" alt=">" />\
+        $else:
+            <img src="/img/star/$(prefix)empty.gif" alt="_" />\
+    \
+
+<h2>All $total Modules &#8211; $sub_title</h2>
+<table>
+    <tr>
+        <th 
+        $if not order_by or order_by == 'title': class="orderBy"
+        >
+        <a href="/modules/">Title</a></th>
+        
+        <th 
+        $if order_by == 'author': class="orderBy"
+        >
+        <a href="/modules/by-author/">Author</a></th>
+        
+        <th 
+        $if order_by == 'date': class="orderBy"
+        >
+        <a href="/modules/by-date/">Date</a></th>
+        
+        <th style="width: 50px" 
+        $if order_by == 'votes': class="orderBy"
+        >
+        <a href="/modules/by-votes/">Votes</a></th>
+    </tr>
+
+    $for module in modules:
+        <tr
+        $if loop.even: class='alternative'
+        >
+            <td 
+            $if not order_by or order_by == 'title': class="orderBy"
+            >
+            <a href="/module/$module.id/">$cut_length(module.title, 80)</a></td>
+            
+            <td 
+            $if order_by == 'author': class="orderBy"
+            >
+            <a href="/author/$url_quote(module.author)/">$cut_length(module.author, 25)</a></td>
+            
+            <td 
+            $if order_by == 'date': class="orderBy"
+            >
+            $format_date(module.datetime_created, '%m/%d/%y')</td>
+            
+            <td 
+            $if order_by == 'votes': class="orderBy"
+            >
+            $if module.calculated_vote > -1:
+                $:show_vote_icons(module.calculated_vote, small_icons=True)
+            </td>
+        </tr>
+</table>
+
+$if next_page_url:
+    <div class="nextPage"><a href="$next_page_url">&gt;&gt;Next page...</a></div>

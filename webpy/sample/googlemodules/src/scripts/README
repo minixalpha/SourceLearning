@@ -1,0 +1,2 @@
+It was impossible to backup the images from Google Modules from the server so I just downloaded them.
+retriever.py -c 4 -n -o ../public/img/screenshot/ all_images.urls > all_images.urls.dnl &
