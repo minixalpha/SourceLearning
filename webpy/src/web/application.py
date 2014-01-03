@@ -44,11 +44,19 @@ class application:
     def __init__(self, mapping=(), fvars={}, autoreload=None):
         if autoreload is None:
             autoreload = web.config.get('debug', False)
+
+# init self.mapping
+# mapping is ('a', 'b', 'c', 'd')
+# after invoke
+# self.mapping is [['a','b'], ['c', 'd']]
         self.init_mapping(mapping)
+
         self.fvars = fvars
         self.processors = []
         
+# _load will be implement before the normal handler of the request
         self.add_processor(loadhook(self._load))
+# _unload will be implement after the normal handler of the request
         self.add_processor(unloadhook(self._unload))
         
         if autoreload:
@@ -117,6 +125,7 @@ class application:
     def add_mapping(self, pattern, classname):
         self.mapping.append((pattern, classname))
 
+    # add a wrapper or decoration to process procedure of the request
     def add_processor(self, processor):
         """
         Adds a processor to the application. 
@@ -271,12 +280,15 @@ class application:
             self._cleanup()
 
             self.load(env)
+
             try:
                 # allow uppercase methods only
                 if web.ctx.method.upper() != web.ctx.method:
                     raise web.nomethod()
 
+
                 result = self.handle_with_processors()
+
                 if is_generator(result):
                     result = peep(result)
                 else:
@@ -284,15 +296,17 @@ class application:
             except web.HTTPError, e:
                 result = [e.data]
 
+
             result = web.safestr(iter(result))
 
             status, headers = web.ctx.status, web.ctx.headers
+
             start_resp(status, headers)
             
             def cleanup():
                 self._cleanup()
                 yield '' # force this function to be a generator
-                            
+
             return itertools.chain(result, cleanup())
 
         for m in middleware: 

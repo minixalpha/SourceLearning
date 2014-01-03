@@ -1,3 +1,4 @@
+import os
 import webtest
 import time
 import threading
@@ -34,13 +35,16 @@ def write(filename, data):
     f.write(data)
     f.close()
 
+def abs_curdir():
+    return os.path.abspath (os.path.curdir)
+
 class ApplicationTest(webtest.TestCase):
     def test_reloader(self):
-        write('foo.py', data % dict(classname='a', output='a'))
+        write('foo.py', data % dict(classname='a', output='b'))
         import foo
         app = foo.app
         
-        self.assertEquals(app.request('/').data, 'a')
+        self.assertEquals(app.request('/').data, 'b')
         
         # test class change
         time.sleep(1)
@@ -53,6 +57,7 @@ class ApplicationTest(webtest.TestCase):
         self.assertEquals(app.request('/').data, 'c')
         
     def testUppercaseMethods(self):
+        print 'testUppercaseMethods'
         urls = ("/", "hello")
         app = web.application(urls, locals())
         class hello:
@@ -61,7 +66,7 @@ class ApplicationTest(webtest.TestCase):
             
         response = app.request('/', method='internal')
         self.assertEquals(response.status, '405 Method Not Allowed')
-        
+       
     def testRedirect(self):
         urls = (
             "/a", "redirect /hello/",

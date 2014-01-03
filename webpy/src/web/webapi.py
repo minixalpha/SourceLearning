@@ -76,6 +76,7 @@ class Redirect(HTTPError):
         `redirect("about") will work properly.
         """
         newloc = urlparse.urljoin(ctx.path, url)
+        print newloc
 
         if newloc.startswith('/'):
             if absolute:
