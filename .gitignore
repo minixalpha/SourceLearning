@@ -36,3 +36,5 @@ nosetests.xml
 .pydevproject
 
 *.swp
+
+webpy/sample/googlemodules/src/config.py
