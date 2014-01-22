@@ -46,5 +46,12 @@ class TestApplication(unittest.TestCase):
         global str
         self.assertEqual(str, 'yxz')
 
+    def test_run(self):
+        urls = (
+                '/hello', 'hello',
+                '/world', 'world')
+        app = web.application(urls)
+        app.run()
+
 if __name__ == '__main__':
     mywebtest.main()

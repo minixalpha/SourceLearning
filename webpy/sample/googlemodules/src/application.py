@@ -29,10 +29,10 @@ urls = (
     '/submit/',                             'app.controllers.submit.submit',
     
     # view author page
-    '/author/(.*?)/',                       'app.controllers.author.show',                      
+    '/author/(.*?)/',                       'app.controllers.author.show',     
     
     # search browse by tag name
-    '/search/',                             'app.controllers.search.search',                             
+    '/search/',                             'app.controllers.search.search',    
     '/tag/(.*?)/',                          'app.controllers.search.list_by_tag',
     
     # view tag clouds

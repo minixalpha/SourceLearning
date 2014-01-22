@@ -18,14 +18,14 @@ create table modules (
     primary key             (id),
     unique key              screenshot (screenshot),
     unique key              url (url)
-) type=InnoDB; charset utf8;
+) engine=InnoDB; charset utf8;
 
 create table tags (
     id                      int(11) not null auto_increment,
     module_id               int(11) not null default '0',
     tag                     varchar(50) not null default '',
     primary key             (id)
-) type=InnoDB; charset utf8;
+) engine=InnoDB; charset utf8;
 
 create table votes (
     id                      int(11) not null auto_increment,
@@ -34,7 +34,7 @@ create table votes (
     ip                      varchar(15) not null default '',
     datetime_created        timestamp default current_timestamp,
     primary key             (id)
-) type=InnoDB; charset utf8;
+) engine=InnoDB; charset utf8;
 
 create table comments (
     id                      int(11) not null auto_increment,
@@ -43,7 +43,7 @@ create table comments (
     author                  varchar(100) not null default '',
     content                 text not null,
     primary key             (id)
-) type=InnoDB; charset utf8;
+) engine=InnoDB; charset utf8;
 
 create table forum_threads (
     id                      int(11) not null auto_increment,
@@ -53,5 +53,5 @@ create table forum_threads (
     datetime_created        timestamp default current_timestamp,
     reply_to                int(11) not null default '0',
     primary key             (id)
-) type=InnoDB; charset utf8;
+) engine=InnoDB; charset utf8;
 alter table forum_threads add index (reply_to);
