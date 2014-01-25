@@ -1,16 +1,12 @@
 """Miscellaneous WSGI-related Utilities"""
 
-"""
-M:
-This module provides a variety of utility functions for working with WSGI environments.
-"""
+# M:
+# This module provides a variety of utility functions for working with WSGI environments.
 
 import posixpath
 
-"""
-M:
-    posixpath is os.path for UNIX-style path
-"""
+# M:
+#    posixpath is os.path for UNIX-style path
 
 __all__ = [
     'FileWrapper', 'guess_scheme', 'application_uri', 'request_uri',

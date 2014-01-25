@@ -1,10 +1,8 @@
 """Base classes for server/gateway implementations"""
 
-"""
-M:
-    This module provides base handler classes for implementing 
-    WSGI servers and gateways. 
-"""
+#M:
+#    This module provides base handler classes for implementing 
+#    WSGI servers and gateways. 
 
 from types import StringType
 from util import FileWrapper, guess_scheme, is_hop_by_hop
@@ -115,17 +113,15 @@ class BaseHandler:
         env = self.environ = self.os_environ.copy()
         self.add_cgi_vars()
 
-        """
-        M:
-            wsgi.errors = <open file '<stderr>', mode 'w' at 0xb73110d0>
-            wsgi.file_wrapper = <class wsgiref.util.FileWrapper at 0xb700462c>
-            wsgi.input = <socket._fileobject object at 0xb7002e6c>
-            wsgi.multiprocess = False
-            wsgi.multithread = True
-            wsgi.run_once = False
-            wsgi.url_scheme = 'http'
-            wsgi.version = (1, 0)
-        """
+        # M:
+        #    wsgi.errors = <open file '<stderr>', mode 'w' at 0xb73110d0>
+        #    wsgi.file_wrapper = <class wsgiref.util.FileWrapper at 0xb700462c>
+        #    wsgi.input = <socket._fileobject object at 0xb7002e6c>
+        #    wsgi.multiprocess = False
+        #    wsgi.multithread = True
+        #    wsgi.run_once = False
+        #    wsgi.url_scheme = 'http'
+        #    wsgi.version = (1, 0)
         env['wsgi.input']        = self.get_stdin()
         env['wsgi.errors']       = self.get_stderr()
         env['wsgi.version']      = self.wsgi_version
@@ -154,15 +150,13 @@ class BaseHandler:
         'self.close()' once the response is finished.
         """
 
-        """
-        M:
-            result_is_file: 
-                True if 'self.result' is an instance of 'self.wsgi_file_wrapper'
-            finish_content:
-                Ensure headers and content have both been sent
-            close:
-                Close the iterable (if needed) and reset all instance vars
-        """
+        # M:
+        #    result_is_file: 
+        #       True if 'self.result' is an instance of 'self.wsgi_file_wrapper'
+        #    finish_content:
+        #       Ensure headers and content have both been sent
+        #    close:
+        #       Close the iterable (if needed) and reset all instance vars
         if not self.result_is_file() or not self.sendfile():
             for data in self.result:
                 self.write(data) # send data by self.write
@@ -179,13 +173,11 @@ class BaseHandler:
     def set_content_length(self):
         """Compute Content-Length or switch to chunked encoding if possible"""
 
-        """
-        M:
-            self.result = application(self.environ, self.start_response)
+        # M:
+        #    self.result = application(self.environ, self.start_response)
 
-            in each write:
-                self.bytes_sent += len(data)
-        """
+        #    in each write:
+        #        self.bytes_sent += len(data)
         try:
             blocks = len(self.result)
         except (TypeError,AttributeError,NotImplementedError):
@@ -208,22 +200,21 @@ class BaseHandler:
     def start_response(self, status, headers,exc_info=None):
         """'start_response()' callable as specified by PEP 333"""
 
-        """
-        M:
-        exc_info:
-            The exc_info argument, if supplied, must be a Python sys.exc_info() tuple.
-            This argument should be supplied by the application only if start_response 
-            is being called by an error handler.
+        # M:
+        # exc_info:
+        #    The exc_info argument, if supplied, must be a Python sys.exc_info()
+        #    tuple. This argument should be supplied by the application only if
+        #    start_response is being called by an error handler.
 
-            exc_info is the most recent exception catch in except clause
+        #    exc_info is the most recent exception catch in except clause
 
-            in error_output:
-                start_response(self.error_status,self.error_headers[:],sys.exc_info())
+        #    in error_output:
+        #        start_response(
+        #             self.error_status,self.error_headers[:],sys.exc_info())
 
-        headers_sent:
-            when send_headers is invoked, headers_sent = True
-            when close is invoked, headers_sent = False
-        """
+        # headers_sent:
+        #    when send_headers is invoked, headers_sent = True
+        #    when close is invoked, headers_sent = False
 
         if exc_info:
             try:
@@ -245,12 +236,12 @@ class BaseHandler:
                 assert type(val) is StringType,"Header values must be strings"
                 assert not is_hop_by_hop(name),"Hop-by-hop headers not allowed"
 
+        # M: set status and headers
+
         self.status = status
 
-        """
-        M:
-            headers_class is Headers in module headers
-        """
+        # M:
+        #    headers_class is Headers in module headers
         self.headers = self.headers_class(headers)
 
         return self.write
@@ -259,12 +250,10 @@ class BaseHandler:
     def send_preamble(self):
         """Transmit version/status/date/server, via self._write()"""
 
-        """
-        M:
-            client_is_modern:
-                True if client can accept status and headers, 
-                thus SERVER_PROTOCOL != 'HTTP/0.9'
-        """
+        # M:
+        #    client_is_modern:
+        #        True if client can accept status and headers, 
+        #        thus SERVER_PROTOCOL != 'HTTP/0.9'
         if self.origin_server:
             if self.client_is_modern():
                 self._write('HTTP/%s %s\r\n' % (self.http_version, self.status))
@@ -294,16 +283,14 @@ class BaseHandler:
 
         # XXX check Content-Length and truncate if too many bytes written?
 
-        """
-        M:
-        _write and _flush is not implemented in BaseHandler
-        
-        in SimpleHandler, 
-            _write = self.stdout.write
-            _flush = self.stdout.flush
-        where stdout is initiated in SimpleHandler.__init__
+        # M:
+        # _write and _flush is not implemented in BaseHandler
+        #
+        # in SimpleHandler, 
+        #    _write = self.stdout.write
+        #    _flush = self.stdout.flush
+        # where stdout is initiated in SimpleHandler.__init__
 
-        """
         self._write(data)
         self._flush()
 
@@ -343,10 +330,8 @@ class BaseHandler:
         Subclasses may want to also drop the client connection.
         """
 
-        """
-        M:
-            self.result = application(self.environ, self.start_response)
-        """
+        # M:
+        #    self.result = application(self.environ, self.start_response)
         try:
             if hasattr(self.result,'close'):
                 self.result.close()
@@ -389,16 +374,15 @@ class BaseHandler:
         Subclasses may override to retarget the output or change its format.
         """
 
-        """
-        M:
-        traceback:
-            provides a standard interface to extract, format and print 
-            stack traces of Python programs
+        # M:
+        # traceback:
+        #    provides a standard interface to extract, format and print 
+        #    stack traces of Python programs
 
-        print_exception:
-            Print exception information and up to limit stack trace entries from 
-            traceback to file
-        """
+        # print_exception:
+        #    Print exception information and up to limit stack trace entries from 
+        #    traceback to file
+        #
         try:
             from traceback import print_exception
             stderr = self.get_stderr()
@@ -432,13 +416,11 @@ class BaseHandler:
         include any here!
         """
 
-        """
-        M:
-        sys.exc_info():
-            Return information about the most recent exception caught by an except
-            clause in the current stack frame or in an older stack frame.
+        # M:
+        # sys.exc_info():
+        #    Return information about the most recent exception caught by an except
+        #    clause in the current stack frame or in an older stack frame.
         
-        """
         start_response(self.error_status,self.error_headers[:],sys.exc_info())
         return [self.error_body]
 

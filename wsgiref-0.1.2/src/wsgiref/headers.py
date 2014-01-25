@@ -5,19 +5,15 @@ so portions are Copyright (C) 2001,2002 Python Software Foundation, and were
 written by Barry Warsaw.
 """
 
-"""
-M:
-This module provides a single class, Headers, for convenient manipulation of 
-WSGI response headers using a mapping-like interface.
-"""
+# M:
+# This module provides a single class, Headers, for convenient manipulation of 
+# WSGI response headers using a mapping-like interface.
 
 from types import ListType, TupleType
 
-"""
-M:
-    types:
-        defines names for some object types that are used by the standard Python interpreter,
-"""
+# M:
+#     types:
+#         defines names for some object types that are used by the standard Python interpreter,
 
 # Regular expression that matches `special' characters in parameters, the
 # existance of which force quoting of the parameter value.
@@ -137,10 +133,8 @@ class Headers:
         list.
         """
 
-        """
-        M: 
-        list[:] return a copy of list
-        """
+        # M: 
+        # list[:] return a copy of list
         return self._headers[:]
 
     def __repr__(self):

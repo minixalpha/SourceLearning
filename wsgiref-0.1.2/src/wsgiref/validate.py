@@ -110,12 +110,10 @@ Some of the things this checks:
 """
 __all__ = ['validator']
 
-"""
-M:
-    This module provides a function that creates WSGI application objects that validate 
-    communications between a WSGI server or gateway and a WSGI application object, 
-    to check both sides for protocol conformance.
-"""
+# M:
+#     This module provides a function that creates WSGI application objects that validate 
+#     communications between a WSGI server or gateway and a WSGI application object, 
+#     to check both sides for protocol conformance.
 
 
 import re

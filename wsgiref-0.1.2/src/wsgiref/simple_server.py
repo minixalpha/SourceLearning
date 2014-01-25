@@ -12,112 +12,102 @@ For example usage, see the 'if __name__=="__main__"' block at the end of the
 module.  See also the BaseHTTPServer module docs for other API information.
 """
 
-"""
-M:
-This module implements a simple HTTP server (based on BaseHTTPServer) 
-that serves WSGI applications
-"""
+# M:
+# This module implements a simple HTTP server (based on BaseHTTPServer) 
+# that serves WSGI applications
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import urllib, sys
 from wsgiref.handlers import SimpleHandler
-"""
-M:
-    BaseHTTPServer: defines two classes for implementing HTTP servers 
-    (Web servers). Usually, this module isn’t used directly, but is used 
-    as a basis for building functioning Web servers.
+# M:
+#    BaseHTTPServer: defines two classes for implementing HTTP servers 
+#    (Web servers). Usually, this module isn’t used directly, but is used 
+#    as a basis for building functioning Web servers.
+#
+#    HTTPServer: a SocketServer.TCPServer subclass, and therefore implements the 
+#    SocketServer.BaseServer interface. It creates and listens at the HTTP 
+#    socket, dispatching the requests to a handler. 
+#
+#    BaseHTTPRequestHandler: is used to handle the HTTP requests that arrive at 
+#    the server. By itself, it cannot respond to any actual HTTP requests; 
+#    it must be subclassed to handle each request method (e.g. GET or POST).
+#
+#    ref: http://docs.python.org/2/library/basehttpserver.html
+#
+#    urllib: This module provides a high-level interface for fetching data
+#    across the World Wide Web.
+#
+#    ref: http://docs.python.org/2/library/urllib.html
+#
+#    sys: This module provides access to some variables used or maintained by 
+#    the interpreter and to functions that interact strongly with the 
+#    interpreter.
 
-    HTTPServer: a SocketServer.TCPServer subclass, and therefore implements the 
-    SocketServer.BaseServer interface. It creates and listens at the HTTP 
-    socket, dispatching the requests to a handler. 
-
-    BaseHTTPRequestHandler: is used to handle the HTTP requests that arrive at 
-    the server. By itself, it cannot respond to any actual HTTP requests; 
-    it must be subclassed to handle each request method (e.g. GET or POST).
-
-    ref: http://docs.python.org/2/library/basehttpserver.html
-
-    urllib: This module provides a high-level interface for fetching data
-    across the World Wide Web.
-
-    ref: http://docs.python.org/2/library/urllib.html
-
-    sys: This module provides access to some variables used or maintained by 
-    the interpreter and to functions that interact strongly with the 
-    interpreter.
-"""
-
-"""
-M:
-__double_leading_and_trailing_underscore__: 
-    "magic" objects or attributes that live in user-controlled namespaces
-
-__all__:
-    modules should explicitly declare the names in their public API using 
-    the __all__ attribute
-"""
+# M:
+# __double_leading_and_trailing_underscore__: 
+#    "magic" objects or attributes that live in user-controlled namespaces
+#
+# __all__:
+#    modules should explicitly declare the names in their public API using 
+#    the __all__ attribute
 __version__ = "0.1"
 __all__ = ['WSGIServer', 'WSGIRequestHandler', 'demo_app', 'make_server']
 
 
-"""
-M:
->>> sys.version
-'2.7.3 (default, Sep 26 2013, 20:08:41) \n[GCC 4.6.3]'
->>> simple_server.software_version
-'WSGIServer/0.1 Python/2.7.3'
-"""    
+# M:
+# >>> sys.version
+# '2.7.3 (default, Sep 26 2013, 20:08:41) \n[GCC 4.6.3]'
+# >>> simple_server.software_version
+# 'WSGIServer/0.1 Python/2.7.3'
+
 server_version = "WSGIServer/" + __version__
 sys_version = "Python/" + sys.version.split()[0]
 software_version = server_version + ' ' + sys_version
 
 
-"""
-M:
-       +-------------+
-       | BaseHandler |   start_response(status, headers, exc_info)
-       +-------------+
-              |
-              V
-      +----------------+
-      | SimpleHandler  |
-      +----------------+
-              |
-              V
-      +---------------+
-      | ServerHandler |
-      +---------------+
-"""
+# M:
+#        +-------------+
+#        | BaseHandler |   start_response(status, headers, exc_info)
+#        +-------------+
+#               |
+#               V
+#       +----------------+
+#       | SimpleHandler  |
+#       +----------------+
+#               |
+#               V
+#       +---------------+
+#       | ServerHandler |
+#       +---------------+
+# 
 class ServerHandler(SimpleHandler):
 
     server_software = software_version
 
     def close(self):
-        """
-        M:
-        S.split([sep [,maxsplit]]) -> list of strings
-        >>> status
-        '200 OK'
-        >>> status.split(' ', 0)
-        ['200 OK']
-        >>> status.split(' ', 1)
-        ['200', 'OK']
-        >>> status.split(' ', 2)
-        ['200', 'OK']
+        # M:
+        # S.split([sep [,maxsplit]]) -> list of strings
+        # >>> status
+        # '200 OK'
+        # >>> status.split(' ', 0)
+        # ['200 OK']
+        # >>> status.split(' ', 1)
+        # ['200', 'OK']
+        # >>> status.split(' ', 2)
+        # ['200', 'OK']
 
 
-        In WSGIRequestHandler.handle
-        handler.request_handler = self
+        # In WSGIRequestHandler.handle
+        # handler.request_handler = self
 
-        WSGIRequestHandler.log_request 
-        -> BaseHTTPRequestHandler.log_request
-        -> BaseHTTPRequestHandler.log_message
-        -> sys.stderr.write
+        # WSGIRequestHandler.log_request 
+        # -> BaseHTTPRequestHandler.log_request
+        # -> BaseHTTPRequestHandler.log_message
+        # -> sys.stderr.write
 
 
-        SimpleHandler.close
-        -> BaseHandler.close
-        """
+        # SimpleHandler.close
+        # -> BaseHandler.close
 
         try:
             self.request_handler.log_request(
@@ -127,27 +117,25 @@ class ServerHandler(SimpleHandler):
             SimpleHandler.close(self)
 
 
-"""
-M:
-        +------------+
-        | BaseServer |
-        +------------+
-              |
-              V
-        +------------+
-        | TCPServer  |
-        +------------+
-              |
-              V
-        +------------+
-        | HTTPServer |
-        +------------+
-              |
-              V
-        +------------+
-        | WSGIServer |
-        +------------+
-"""
+# M:
+#         +------------+
+#         | BaseServer |
+#         +------------+
+#               |
+#               V
+#         +------------+
+#         | TCPServer  |
+#         +------------+
+#               |
+#               V
+#         +------------+
+#         | HTTPServer |
+#         +------------+
+#               |
+#               V
+#         +------------+
+#         | WSGIServer |
+#         +------------+
 class WSGIServer(HTTPServer):
 
     """BaseHTTPServer that implements the Python WSGI protocol"""
@@ -178,27 +166,25 @@ class WSGIServer(HTTPServer):
     def set_app(self,application):
         self.application = application
 
-"""
-M:
-        +--------------------+
-        | BaseRequestHandler |
-        +--------------------+
-                  |
-                  V
-        +-----------------------+
-        | StreamRequestHandler  |
-        +-----------------------+
-                  |
-                  V
-        +------------------------+
-        | BaseHTTPRequestHandler |
-        +------------------------+
-                  |
-                  V
-        +--------------------+
-        | WSGIRequestHandler |
-        +--------------------+
-"""
+# M:
+#         +--------------------+
+#         | BaseRequestHandler |
+#         +--------------------+
+#                   |
+#                   V
+#         +-----------------------+
+#         | StreamRequestHandler  |
+#         +-----------------------+
+#                   |
+#                   V
+#         +------------------------+
+#         | BaseHTTPRequestHandler |
+#         +------------------------+
+#                   |
+#                   V
+#         +--------------------+
+#         | WSGIRequestHandler |
+#         +--------------------+
 
 class WSGIRequestHandler(BaseHTTPRequestHandler):
 
@@ -257,33 +243,32 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
         if length:
             env['CONTENT_LENGTH'] = length
 
-        """
-        M:
+        # M:
 
-        self.headers:
-            Host: localhost:8000
-            Connection: keep-alive
-            Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
-            User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36
-            Accept-Encoding: gzip,deflate,sdch
-            Accept-Language: en-US,en;q=0.8,zh;q=0.6,zh-CN;q=0.4,zh-TW;q=0.2
+        # self.headers:
+        #     Host: localhost:8000
+        #     Connection: keep-alive
+        #     Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+        #     User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36
+        #     Accept-Encoding: gzip,deflate,sdch
+        #     Accept-Language: en-US,en;q=0.8,zh;q=0.6,zh-CN;q=0.4,zh-TW;q=0.2
 
-        self.headers.headers:
-            ['Host: localhost:8000\r\n', 
-            'Connection: keep-alive\r\n', 
-            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n', 
-            'User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36\r\n', 
-            'Accept-Encoding: gzip,deflate,sdch\r\n', 
-            'Accept-Language: en-US,en;q=0.8,zh;q=0.6,zh-CN;q=0.4,zh-TW;q=0.2\r\n']
+        # self.headers.headers:
+        #     ['Host: localhost:8000\r\n', 
+        #     'Connection: keep-alive\r\n', 
+        #     'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n', 
+        #     'User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36\r\n', 
+        #     'Accept-Encoding: gzip,deflate,sdch\r\n', 
+        #     'Accept-Language: en-US,en;q=0.8,zh;q=0.6,zh-CN;q=0.4,zh-TW;q=0.2\r\n']
 
-        after loop, in env:
-            env[HTTP_ACCEPT] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
-            env[HTTP_ACCEPT_ENCODING] = 'gzip,deflate,sdch'
-            env[HTTP_ACCEPT_LANGUAGE] = 'en-US,en;q=0.8,zh;q=0.6,zh-CN;q=0.4,zh-TW;q=0.2'
-            env[HTTP_CONNECTION] = 'keep-alive'
-            env[HTTP_HOST] = 'localhost:8000'
-            env[HTTP_USER_AGENT] = 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36'
-        """
+        # after loop, in env:
+        #     env[HTTP_ACCEPT] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+        #     env[HTTP_ACCEPT_ENCODING] = 'gzip,deflate,sdch'
+        #     env[HTTP_ACCEPT_LANGUAGE] = 'en-US,en;q=0.8,zh;q=0.6,zh-CN;q=0.4,zh-TW;q=0.2'
+        #     env[HTTP_CONNECTION] = 'keep-alive'
+        #     env[HTTP_HOST] = 'localhost:8000'
+        #     env[HTTP_USER_AGENT] = 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.77 Safari/537.36'
+
         for h in self.headers.headers:
             k, v = h.split(':', 1)
             k = k.replace('-', '_').upper()
@@ -297,19 +282,18 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
         return env
 
     def get_stderr(self):
-        """
-        M:
-        usage:
-        print >> sys.stderr, 'error msg'
+        # M:
+        # usage:
+        # print >> sys.stderr, 'error msg'
 
-        why:
-        The advantages of using sys.stderr for errors instead of sys.stdout are:
-            * If the user redirected stdout to a file, she still sees errors on 
-            the screen.
-            * It's not buffered, so if sys.stderr is redirected to a log file 
-            there are less chance that the program may crash before the error 
-            was logged.
-        """
+        # why:
+        # The advantages of using sys.stderr for errors instead of sys.stdout are:
+        #     * If the user redirected stdout to a file, she still sees errors on 
+        #     the screen.
+        #     * It's not buffered, so if sys.stderr is redirected to a log file 
+        #     there are less chance that the program may crash before the error 
+        #     was logged.
+
         return sys.stderr
 
     def handle(self):
@@ -340,9 +324,8 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
 
 
 def demo_app(environ,start_response):
-    """
-    M: StringIO reads and writes a string buffer (also known as memory files).
-    """
+    # M: StringIO reads and writes a string buffer (also known as memory files).
+
     from StringIO import StringIO
     stdout = StringIO()
     print >> stdout, "Hello world!"
