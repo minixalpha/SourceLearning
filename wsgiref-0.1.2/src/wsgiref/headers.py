@@ -5,7 +5,19 @@ so portions are Copyright (C) 2001,2002 Python Software Foundation, and were
 written by Barry Warsaw.
 """
 
+"""
+M:
+This module provides a single class, Headers, for convenient manipulation of 
+WSGI response headers using a mapping-like interface.
+"""
+
 from types import ListType, TupleType
+
+"""
+M:
+    types:
+        defines names for some object types that are used by the standard Python interpreter,
+"""
 
 # Regular expression that matches `special' characters in parameters, the
 # existance of which force quoting of the parameter value.
@@ -64,10 +76,6 @@ class Headers:
         the values matching a header field name.
         """
         return self.get(name)
-
-
-
-
 
     def has_key(self, name):
         """Return true if the message contains the header."""
@@ -128,6 +136,11 @@ class Headers:
         Any fields deleted and re-inserted are always appended to the header
         list.
         """
+
+        """
+        M: 
+        list[:] return a copy of list
+        """
         return self._headers[:]
 
     def __repr__(self):
@@ -175,4 +188,5 @@ class Headers:
                 parts.append(k.replace('_', '-'))
             else:
                 parts.append(_formatparam(k.replace('_', '-'), v))
+
         self._headers.append((_name, "; ".join(parts)))

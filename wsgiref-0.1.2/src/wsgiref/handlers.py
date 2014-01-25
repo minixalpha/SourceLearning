@@ -1,5 +1,11 @@
 """Base classes for server/gateway implementations"""
 
+"""
+M:
+    This module provides base handler classes for implementing 
+    WSGI servers and gateways. 
+"""
+
 from types import StringType
 from util import FileWrapper, guess_scheme, is_hop_by_hop
 from headers import Headers
@@ -7,6 +13,9 @@ from headers import Headers
 import sys, os, time
 
 __all__ = ['BaseHandler', 'SimpleHandler', 'BaseCGIHandler', 'CGIHandler']
+
+
+# M: test or define keywords: dict, True, False
 
 try:
     dict
@@ -25,12 +34,18 @@ except NameError:
     False = not True
 
 
+# M: PEP8 _single_leading_underscore: weak "internal use" indicator.
+# M: data-driven
+
 # Weekday and month names for HTTP date/time formatting; always English!
 _weekdayname = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 _monthname = [None, # Dummy so we can use 1-based month numbers
               "Jan", "Feb", "Mar", "Apr", "May", "Jun",
               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
+# M: Get Greenwich Mean Time(GMT) by timestamp
+# M: time.gmtime() return a time.struct_time object, in which
+#    tm_mon range[1, 12], tm_wday range[0, 6]
 def format_date_time(timestamp):
     year, month, day, hh, mm, ss, wd, y, z = time.gmtime(timestamp)
     return "%s, %02d %3s %4d %02d:%02d:%02d GMT" % (
@@ -73,13 +88,6 @@ class BaseHandler:
     headers = None
     bytes_sent = 0
 
-
-
-
-
-
-
-
     def run(self, application):
         """Invoke the application"""
         # Note to self: don't move the close()!  Asynchronous servers shouldn't
@@ -103,9 +111,21 @@ class BaseHandler:
     def setup_environ(self):
         """Set up the environment for one request"""
 
+        # M: copy for one request
         env = self.environ = self.os_environ.copy()
         self.add_cgi_vars()
 
+        """
+        M:
+            wsgi.errors = <open file '<stderr>', mode 'w' at 0xb73110d0>
+            wsgi.file_wrapper = <class wsgiref.util.FileWrapper at 0xb700462c>
+            wsgi.input = <socket._fileobject object at 0xb7002e6c>
+            wsgi.multiprocess = False
+            wsgi.multithread = True
+            wsgi.run_once = False
+            wsgi.url_scheme = 'http'
+            wsgi.version = (1, 0)
+        """
         env['wsgi.input']        = self.get_stdin()
         env['wsgi.errors']       = self.get_stderr()
         env['wsgi.version']      = self.wsgi_version
@@ -117,6 +137,10 @@ class BaseHandler:
         if self.wsgi_file_wrapper is not None:
             env['wsgi.file_wrapper'] = self.wsgi_file_wrapper
 
+        # M: SERVER_SOFTWARE = 'WSGIServer/0.1 Python/2.7.3'
+        # M: setdefault: If key is in the dictionary, return its value. 
+        #    If not, insert key with a value of default and return default. 
+        #    default defaults to None.
         if self.origin_server and self.server_software:
             env.setdefault('SERVER_SOFTWARE',self.server_software)
 
@@ -129,20 +153,39 @@ class BaseHandler:
         in the event loop to iterate over the data, and to call
         'self.close()' once the response is finished.
         """
+
+        """
+        M:
+            result_is_file: 
+                True if 'self.result' is an instance of 'self.wsgi_file_wrapper'
+            finish_content:
+                Ensure headers and content have both been sent
+            close:
+                Close the iterable (if needed) and reset all instance vars
+        """
         if not self.result_is_file() or not self.sendfile():
             for data in self.result:
-                self.write(data)
+                self.write(data) # send data by self.write
             self.finish_content()
         self.close()
 
 
     def get_scheme(self):
         """Return the URL scheme being used"""
+        # return 'http' or 'https'
         return guess_scheme(self.environ)
 
 
     def set_content_length(self):
         """Compute Content-Length or switch to chunked encoding if possible"""
+
+        """
+        M:
+            self.result = application(self.environ, self.start_response)
+
+            in each write:
+                self.bytes_sent += len(data)
+        """
         try:
             blocks = len(self.result)
         except (TypeError,AttributeError,NotImplementedError):
@@ -165,6 +208,23 @@ class BaseHandler:
     def start_response(self, status, headers,exc_info=None):
         """'start_response()' callable as specified by PEP 333"""
 
+        """
+        M:
+        exc_info:
+            The exc_info argument, if supplied, must be a Python sys.exc_info() tuple.
+            This argument should be supplied by the application only if start_response 
+            is being called by an error handler.
+
+            exc_info is the most recent exception catch in except clause
+
+            in error_output:
+                start_response(self.error_status,self.error_headers[:],sys.exc_info())
+
+        headers_sent:
+            when send_headers is invoked, headers_sent = True
+            when close is invoked, headers_sent = False
+        """
+
         if exc_info:
             try:
                 if self.headers_sent:
@@ -184,16 +244,30 @@ class BaseHandler:
                 assert type(name) is StringType,"Header names must be strings"
                 assert type(val) is StringType,"Header values must be strings"
                 assert not is_hop_by_hop(name),"Hop-by-hop headers not allowed"
+
         self.status = status
+
+        """
+        M:
+            headers_class is Headers in module headers
+        """
         self.headers = self.headers_class(headers)
+
         return self.write
 
 
     def send_preamble(self):
         """Transmit version/status/date/server, via self._write()"""
+
+        """
+        M:
+            client_is_modern:
+                True if client can accept status and headers, 
+                thus SERVER_PROTOCOL != 'HTTP/0.9'
+        """
         if self.origin_server:
             if self.client_is_modern():
-                self._write('HTTP/%s %s\r\n' % (self.http_version,self.status))
+                self._write('HTTP/%s %s\r\n' % (self.http_version, self.status))
                 if not self.headers.has_key('Date'):
                     self._write(
                         'Date: %s\r\n' % format_date_time(time.time())
@@ -219,6 +293,17 @@ class BaseHandler:
             self.bytes_sent += len(data)
 
         # XXX check Content-Length and truncate if too many bytes written?
+
+        """
+        M:
+        _write and _flush is not implemented in BaseHandler
+        
+        in SimpleHandler, 
+            _write = self.stdout.write
+            _flush = self.stdout.flush
+        where stdout is initiated in SimpleHandler.__init__
+
+        """
         self._write(data)
         self._flush()
 
@@ -257,27 +342,40 @@ class BaseHandler:
 
         Subclasses may want to also drop the client connection.
         """
+
+        """
+        M:
+            self.result = application(self.environ, self.start_response)
+        """
         try:
             if hasattr(self.result,'close'):
                 self.result.close()
         finally:
             self.result = self.headers = self.status = self.environ = None
-            self.bytes_sent = 0; self.headers_sent = False
+            self.bytes_sent = 0
+            self.headers_sent = False
 
 
     def send_headers(self):
         """Transmit headers to the client, via self._write()"""
+
+        # cleanup_headers: set content length
         self.cleanup_headers()
+
         self.headers_sent = True
         if not self.origin_server or self.client_is_modern():
+            # M: send_preamble: Transmit version/status/date/server, via self._write()
             self.send_preamble()
+
+            # M: self.headers = self.headers_class(headers), where headers is parameter of
+            #    start_response
             self._write(str(self.headers))
 
 
     def result_is_file(self):
         """True if 'self.result' is an instance of 'self.wsgi_file_wrapper'"""
         wrapper = self.wsgi_file_wrapper
-        return wrapper is not None and isinstance(self.result,wrapper)
+        return wrapper is not None and isinstance(self.result, wrapper)
 
 
     def client_is_modern(self):
@@ -289,6 +387,17 @@ class BaseHandler:
         """Log the 'exc_info' tuple in the server log
 
         Subclasses may override to retarget the output or change its format.
+        """
+
+        """
+        M:
+        traceback:
+            provides a standard interface to extract, format and print 
+            stack traces of Python programs
+
+        print_exception:
+            Print exception information and up to limit stack trace entries from 
+            traceback to file
         """
         try:
             from traceback import print_exception
@@ -321,6 +430,14 @@ class BaseHandler:
         spit out diagnostics to any old user; ideally, you should have to do
         something special to enable diagnostic output, which is why we don't
         include any here!
+        """
+
+        """
+        M:
+        sys.exc_info():
+            Return information about the most recent exception caught by an except
+            clause in the current stack frame or in an older stack frame.
+        
         """
         start_response(self.error_status,self.error_headers[:],sys.exc_info())
         return [self.error_body]
@@ -356,15 +473,6 @@ class BaseHandler:
     def add_cgi_vars(self):
         """Override in subclass to insert CGI variables in 'self.environ'"""
         raise NotImplementedError
-
-
-
-
-
-
-
-
-
 
 
 class SimpleHandler(BaseHandler):
@@ -432,23 +540,6 @@ class BaseCGIHandler(SimpleHandler):
     origin_server = False
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class CGIHandler(BaseCGIHandler):
 
     """CGI-based invocation via sys.stdin/stdout/stderr and os.environ
@@ -473,20 +564,3 @@ class CGIHandler(BaseCGIHandler):
             self, sys.stdin, sys.stdout, sys.stderr, dict(os.environ.items()),
             multithread=False, multiprocess=True
         )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#

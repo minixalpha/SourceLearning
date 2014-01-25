@@ -1,6 +1,16 @@
 """Miscellaneous WSGI-related Utilities"""
 
+"""
+M:
+This module provides a variety of utility functions for working with WSGI environments.
+"""
+
 import posixpath
+
+"""
+M:
+    posixpath is os.path for UNIX-style path
+"""
 
 __all__ = [
     'FileWrapper', 'guess_scheme', 'application_uri', 'request_uri',
@@ -42,6 +52,7 @@ def guess_scheme(environ):
         return 'http'
 
 
+# M: get [http|https:]//host:port/
 def application_uri(environ):
     """Return the application's base URI (no PATH_INFO or QUERY_STRING)"""
     url = environ['wsgi.url_scheme']+'://'
@@ -52,6 +63,7 @@ def application_uri(environ):
     else:
         url += environ['SERVER_NAME']
 
+        # M: 443 and 80 is default port for https and http respectively
         if environ['wsgi.url_scheme'] == 'https':
             if environ['SERVER_PORT'] != '443':
                 url += ':' + environ['SERVER_PORT']
@@ -63,15 +75,18 @@ def application_uri(environ):
     return url
 
 
+# M: get [http|https:]//host:port/path?query
 def request_uri(environ, include_query=1):
     """Return the full request URI, optionally including the query string"""
     url = application_uri(environ)
     from urllib import quote
+
     path_info = quote(environ.get('PATH_INFO',''))
     if not environ.get('SCRIPT_NAME'):
         url += path_info[1:]
     else:
         url += path_info
+
     if include_query and environ.get('QUERY_STRING'):
         url += '?' + environ['QUERY_STRING']
     return url
