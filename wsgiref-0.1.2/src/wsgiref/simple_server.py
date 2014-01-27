@@ -16,6 +16,25 @@ module.  See also the BaseHTTPServer module docs for other API information.
 # This module implements a simple HTTP server (based on BaseHTTPServer) 
 # that serves WSGI applications
 
+# M:
+#        +-----------------------------------------------+
+#        | simple_server: WSGIServer, WSGIRequestHandler |   
+#        |                                               |
+#        +-----------------------------------------------+
+#                               |
+#                               V
+#       +----------------------------------------------------+
+#       | BaseHTTPServer: HTTPServer, BaseHTTPRequestHandler |
+#       +----------------------------------------------------+
+#                               |
+#                               V
+#       +----------------------------------------------------+
+#       | SocketServer: TCPServer,BaseSErver;                |
+#       | StreamRequestHandler,BaseRequestHandler            |
+#       +----------------------------------------------------+
+# 
+
+
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import urllib, sys
 from wsgiref.handlers import SimpleHandler
