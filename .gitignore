@@ -38,3 +38,7 @@ nosetests.xml
 *.swp
 
 webpy/sample/googlemodules/src/config.py
+
+openjdk/src
+jdk_demo
+requests
