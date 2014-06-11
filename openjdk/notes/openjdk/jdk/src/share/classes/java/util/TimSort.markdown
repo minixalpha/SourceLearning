@@ -5,7 +5,7 @@
 
 ## 概要
 
-这个类在 Oracle 的官方文档里是查不到的，但是确实在 `OpenJDK` 的源代码里出现了，`Arrays` 中的 `sort` 函数用到了这个用于排序的类。它是归并排序(merge sort) 与插入排序(insertion sort) ，对于已经部分排序的数组，时间复杂度远低于 `O(n log(n))`，最好可达 `O(n)`，对于随机排序的数组，时间复杂度为 `O(nlog(n))`，平均时间复杂度 `O(nlog(n))`。强烈建议在看此文前观看 Youtube 上的 [可视化Timsort](http://www.youtube.com/watch?v=NVIjHj-lrT4)，看完后马上就会对算法的执行过程有一个感性的了解。然后，可以阅读 Wikipeida 词条：[Timsort](http://en.wikipedia.org/wiki/Timsort)。 这个排序算法在 Java SE 7, Android, GNU Octave 中都得到了应用。
+这个类在 Oracle 的官方文档里是查不到的，但是确实在 `OpenJDK` 的源代码里出现了，`Arrays` 中的 `sort` 函数用到了这个用于排序的类。它将归并排序(merge sort) 与插入排序(insertion sort) 结合，并进行了一些优化。对于已经部分排序的数组，时间复杂度远低于 `O(n log(n))`，最好可达 `O(n)`，对于随机排序的数组，时间复杂度为 `O(nlog(n))`，平均时间复杂度 `O(nlog(n))`。强烈建议在看此文前观看 Youtube 上的 [可视化Timsort](http://www.youtube.com/watch?v=NVIjHj-lrT4)，看完后马上就会对算法的执行过程有一个感性的了解。然后，可以阅读 Wikipeida 词条：[Timsort](http://en.wikipedia.org/wiki/Timsort)。 这个排序算法在 Java SE 7, Android, GNU Octave 中都得到了应用。另外，文 后也推荐了两篇非常好的文章，如果想搞明白 `TimSort` 最好阅读一下。
 
 此类是对 `Python` 中，由 `Tim Peters` 实现的排序算法的改写。实现来自：[listobject.c](http://svn.python.org/projects/python/trunk/Objects/listobject.c).
 
