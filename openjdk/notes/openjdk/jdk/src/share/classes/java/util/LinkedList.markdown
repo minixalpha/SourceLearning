@@ -220,6 +220,16 @@ void linkLast(E e) {
 
 * LinkedList 中以 index 检索
 
+注意 `LinkedList` 的  `get` 函数是调用 `node`  实现的：
+
+```java
+public E get(int index) {
+    checkElementIndex(index);
+    return node(index).item;
+}
+```
+
+
 ```java
    Node<E> node(int index) {
         // assert isElementIndex(index);
@@ -238,7 +248,7 @@ void linkLast(E e) {
     }
 ```
 
-可以看出这里的小技巧，以 `index` 在前半段还是后半段，来决定是从前向后搜索，还是从后向前。
+可以看出这里的小技巧，以 `index` 在前半段还是后半段，来决定是从前向后搜索，还是从后向前。 不过千万注意在 `LinkedList` 中，`get` 是通过 `for` 循环实现的，所以遍历 `LinkedList` 时，不要通过 `get(i)` 的方式实现，要用迭代实现。
 
 * 代码重复问题
 
