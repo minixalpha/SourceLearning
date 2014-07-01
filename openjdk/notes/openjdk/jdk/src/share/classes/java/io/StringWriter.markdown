@@ -1,4 +1,4 @@
-# OpenJDK 源码阅读之 StringBuffer
+# OpenJDK 源码阅读之 StringWriter
 
 标签（空格分隔）： 源代码阅读 Java 封神之路
 
