@@ -51,7 +51,8 @@
 ## 核心问题
 首先是模样引擎如何解决核心问题，然后是如何支持核心特性
 
-### 模板引擎
+### 模板引擎工作原理
+
 核心问题是，给出静态的 HTML 文件，以及变量值，生成最终返回给客户端的 HTML 文件。
 
 html 模板
@@ -73,6 +74,46 @@ user = 'jack'
     Hello jack
 </html>
 ```
+
+如何通过 Jinja2 实现上面的效果
+
+```
+from jinja2 import Environment
+
+
+print Template("""\
+<html>
+    Hello {{ user }}
+</html>
+""").render(user="jack")
+```
+
+通过上面的例子，基本上可以明白模板引擎是在做什么，下面我们看看具体是怎么完成这一功能的。
+
+Jinja 会把 html 模板的代码编译成一段 Python 代码
+
+```python
+from __future__ import division
+from jinja2.runtime import LoopContext, Context, TemplateReference, Macro, Markup, TemplateRuntimeError, missing, concat, escape, markup_join, unicode_join
+name = None
+
+def root(context, environment=environment):
+    l_user = context.resolve('user')
+    if 0: yield None
+    yield u'<html>\n    Hello %s\n</html>' % (
+        l_user, 
+    )
+
+blocks = {}
+debug_info = '1=8&2=9'
+```
+
+然后调用这段 Python 代码中的 `root` 函数，其中 `context` 变量中存储着变量的值，即上面的例子中
+`user="jack"` 部分。
+
+### 模板引擎实现细节
+从上面的过程我们也可以看出，问题的关键就是怎么把那段 html 模板的代码转换为 Python 代码。
+
 
 ### 核心特性
 * 变量
