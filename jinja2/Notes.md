@@ -51,7 +51,7 @@
 
 ### 模板引擎工作原理
 
-核心问题是，给出静态的 HTML 文件，以及变量值，生成最终返回给客户端的 HTML 文件。
+核心问题是，给出静态的 HTML 模板，以及变量值，生成最终返回给客户端的 HTML 文件。
 
 html 模板
 ```
@@ -110,9 +110,208 @@ debug_info = '1=8&2=9'
 `user="jack"` 部分。
 
 ### 模板引擎核心问题实现细节
-从上面的过程我们也可以看出，问题的关键就是怎么把那段 html 模板的代码转换为 Python 代码。
 
-JinJa 使用 environment.Environment.compile 函数，将 html 代码编译成 Python 代码，其中当然涉及编译原理的词法分析，语法分析。
+从上面的过程我们也可以看出，问题的关键就是怎么把那段 html 模板的代码转换为 Python 代码。JinJa 使用 environment.Environment.compile 函数，将 html 代码编译成 Python  代码， 其中当然涉及编译原理的词法分析， 语法分析。我们从最简单的例子开始，逐步体会一下 JinJa 如何将包含各种语法特性的 html 模板转化成 python 代码。
+
+html 模板源代码会依次经过 environment, parser, lexer 模块，最终的词法分析在 lexer.Lexer.tokeniter 函数中完成，它的功能就是将 html 模板源代码转化成 token 流，token 有不同的类型。
+
+最简单的只包含一个变量的模板开始。
+
+```html
+<html>
+    Hello {{ user }}
+</html>
+```
+
+这段 html 模板构成的 token 流即为：
+
+```
+('<html>\n    Hello ', 'data'), 
+
+('{{', 'variable_begin'), 
+
+(' ', 'whitespace'),
+
+('user', 'name'), 
+
+(' ', 'whitespace'), 
+
+('}}', 'variable_end'), 
+
+('\n</html>', 'data')
+
+```
+
+每个 token 都由 (值，类型) 构成。
+
+而 parser 模块会使用 lexer 模块得到的 token 流，进行语法分析，生成抽象语法树(AST)，并返回。语法分析部分最终在 parser.Parser.subparse 函数中完成。语法分析的最终结果得到了：
+
+```python
+[Output(nodes=[
+                TemplateData(data=u'<html>\n    Hello '), 
+                Name(name='user', ctx='load'), 
+                TemplateData(data=u'\n</html>')
+              ]
+        )
+]
+```
+
+然后environment.Environment.compile 函数再使用 compiler.generate 函数将 AST 转化为 Python 代码。转化为 Python 代码的最终函数为 compiler.CodeGenerator.visit_Template 函数。生成的 Python 代码即为：
+
+```python
+from __future__ import division
+from jinja2.runtime import LoopContext, Context, TemplateReference, Macro, Markup, TemplateRuntimeError, missing, concat, escape, markup_join, unicode_join
+name = None
+
+def root(context, environment=environment):
+    l_user = context.resolve('user')
+    if 0: yield None
+    yield u'<html>\n    Hello %s\n</html>' % (
+        l_user, 
+    )
+
+blocks = {}
+debug_info = '1=8&2=9'
+```
+
+前面几行是共用的，直接输出即可。
+
+下面这行 
+
+```python
+l_user = context.resolve('user')
+```
+
+通过 compiler.CodeGenerator.pull_locals 函数生成，如果发现 nodes 中有未定义的变量，就会使用 context 
+来解析，context 中就包含有 Template.render(user='jack') 中的 {'user': 'jack'} 信息。
+
+后面使用 `yield` 的那几行，在 `compiler.CodeGenerator.visit_Output` 中生成。它会依次访问 nodes 中的结点，生成相应的 python 代码。nodes 就是刚才语法分析生成的Output 中的 nodes：
+
+```python
+[Output(nodes=[
+                TemplateData(data=u'<html>\n    Hello '), 
+                Name(name='user', ctx='load'), 
+                TemplateData(data=u'\n</html>')
+              ]
+        )
+]
+```
+
+TemplateData 类型的数据会直接进行拼接，Name 类型的会转化成类似 ` ' %s ' % (luser) ` 的形式。
+
+上面的例子只包含变量，下面我们看一下添加语法特性后的例子。
+
+这个例子中包含了变量及 if 语句。
+
+完整示例:
+
+```python
+from jinja2 import Template
+
+
+print Template("""\
+<html>
+    {% if foo %}
+        is foo
+    {% else %}
+        bar
+    {% endif %}
+</html>
+""").render(foo = True)
+```
+
+运行这个 python 程序，会输出：
+
+```
+<html>
+    
+        is foo
+    
+</html>
+```
+
+在这个例子中， html 模板是：
+
+```html
+<html>
+    {% if foo %}
+        is foo
+    {% else %}
+        bar
+    {% endif %}
+</html>
+```
+
+生成的 python 代码是：
+
+```python
+from __future__ import division
+from jinja2.runtime import LoopContext, Context, TemplateReference, Macro, Markup, TemplateRuntimeError, missing, concat, escape, markup_join, unicode_join
+name = None
+
+def root(context, environment=environment):
+    l_foo = context.resolve('foo')
+    if 0: yield None
+    yield u'<html>\n    '
+    if l_foo:
+        if 0: yield None
+        yield u'\n        is foo\n    '
+    else:
+        if 0: yield None
+        yield u'\n        bar\n    '
+    yield u'\n</html>'
+
+blocks = {}
+debug_info = '1=8&2=9&4=14&6=15'
+```
+
+我们可以清楚的看出，模板中的 if 语句就是被转化成了 python 中的 if 语句。对 html 的词法分析得到的 token 流为：
+
+```
+('<html>\n ', 'data'),
+
+('{%', 'block_begin'),
+
+(' ', 'whitespace'),
+
+('if', 'name'),
+
+(' ', 'whitespace'),
+
+('foo', 'name'),
+
+(' ', 'whitespace'),
+
+('%}', 'block_end'),
+
+('\n        is foo\n    ', 'data'),
+
+...
+
+```
+
+注意词法分析和语法分析并非独立进行，而是边语法分析，边词法分析，语法分析分析需要 token 时，就从 token 流中获取一个，如何获取是词法分析的事，获取之后用来做什么则由语法分析决定。语法分析最终得到：
+
+```
+[
+    Output(nodes=[TemplateData(data=u'<html>\n    ')]), 
+    
+    If(test=Name(name='foo', ctx='load'), 
+        body= [Output(nodes=[TemplateData(data=u'\n        is foo\n    ')])], 
+        else_=[Output(nodes=[TemplateData(data=u'\n        bar\n    ')])]
+      ), 
+
+    Output(nodes=[TemplateData(data=u'\n</html>')])
+]
+```
+
+从这里，应该可以看出抽象语法树中“树”的影子了。生成 AST 后，就是如何将这个 AST 转换成 Python 代码了。
+
+我们不再继续展开，但是已经足够明白 JinJa 的核心部分在做什么：
+
+* 词法分析: HTML 模板 -> token 流
+* 语法分析: token 流 -> 抽象语法树
+* 代码生成: 抽象语法树 -> Python 代码
 
 
 ### 核心特性
@@ -168,3 +367,5 @@ class Comment(Node):
 4.定义自己的异常系统
 
 5.如何实现简单的词法分析器和语法分析器
+
+6.token流中使用 yield 实现一个迭代器
