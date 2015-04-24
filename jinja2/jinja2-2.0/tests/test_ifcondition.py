@@ -1,0 +1,46 @@
+# -*- coding: utf-8 -*-
+"""
+    unit test for if conditions
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    :copyright: 2007 by Armin Ronacher.
+    :license: BSD, see LICENSE for more details.
+"""
+
+SIMPLE = '''{% if true %}...{% endif %}'''
+ELIF = '''{% if false %}XXX{% elif true %}...{% else %}XXX{% endif %}'''
+ELSE = '''{% if false %}XXX{% else %}...{% endif %}'''
+EMPTY = '''[{% if true %}{% else %}{% endif %}]'''
+
+
+def test_simple(env):
+    tmpl = env.from_string(SIMPLE)
+    assert tmpl.render() == '...'
+
+
+def test_elif(env):
+    tmpl = env.from_string(ELIF)
+    assert tmpl.render() == '...'
+
+
+def test_else(env):
+    tmpl = env.from_string(ELSE)
+    assert tmpl.render() == '...'
+
+
+def test_empty(env):
+    tmpl = env.from_string(EMPTY)
+    assert tmpl.render() == '[]'
+
+
+def test_complete(env):
+    tmpl = env.from_string('{% if a %}A{% elif b %}B{% elif c == d %}'
+                           'C{% else %}D{% endif %}')
+    assert tmpl.render(a=0, b=False, c=42, d=42.0) == 'C'
+
+
+def test_no_scope(env):
+    tmpl = env.from_string('{% if a %}{% set foo = 1 %}{% endif %}{{ foo }}')
+    assert tmpl.render(a=True) == '1'
+    tmpl = env.from_string('{% if true %}{% set foo = 1 %}{% endif %}{{ foo }}')
+    assert tmpl.render() == '1'

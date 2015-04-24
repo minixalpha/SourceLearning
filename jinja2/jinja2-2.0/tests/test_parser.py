@@ -1,0 +1,75 @@
+# -*- coding: utf-8 -*-
+"""
+    unit test for the parser
+    ~~~~~~~~~~~~~~~~~~~~~~~~
+
+    :copyright: 2007 by Armin Ronacher.
+    :license: BSD, see LICENSE for more details.
+"""
+from jinja2 import Environment
+
+
+PHP_SYNTAX = '''\
+<!-- I'm a comment, I'm not interesting -->\
+<? for item in seq -?>
+    <?= item ?>
+<?- endfor ?>'''
+
+ERB_SYNTAX = '''\
+<%# I'm a comment, I'm not interesting %>\
+<% for item in seq -%>
+    <%= item %>
+<%- endfor %>'''
+
+COMMENT_SYNTAX = '''\
+<!--# I'm a comment, I'm not interesting -->\
+<!-- for item in seq --->
+    ${item}
+<!--- endfor -->'''
+
+MAKO_SYNTAX = '''\
+% for item in seq:
+    ${item}
+% endfor'''
+
+BALANCING = '''{{{'foo':'bar'}.foo}}'''
+
+STARTCOMMENT = '''{# foo comment
+and bar comment #}
+{% macro blub() %}foo{% endmacro %}
+{{ blub() }}'''
+
+
+def test_php_syntax():
+    env = Environment('<?', '?>', '<?=', '?>', '<!--', '-->')
+    tmpl = env.from_string(PHP_SYNTAX)
+    assert tmpl.render(seq=range(5)) == '01234'
+
+
+def test_erb_syntax():
+    env = Environment('<%', '%>', '<%=', '%>', '<%#', '%>')
+    tmpl = env.from_string(ERB_SYNTAX)
+    assert tmpl.render(seq=range(5)) == '01234'
+
+
+def test_comment_syntax():
+    env = Environment('<!--', '-->', '${', '}', '<!--#', '-->')
+    tmpl = env.from_string(COMMENT_SYNTAX)
+    assert tmpl.render(seq=range(5)) == '01234'
+
+
+def test_balancing(env):
+    tmpl = env.from_string(BALANCING)
+    assert tmpl.render() == 'bar'
+
+
+def test_start_comment(env):
+    tmpl = env.from_string(STARTCOMMENT)
+    assert tmpl.render().strip() == 'foo'
+
+
+def test_line_syntax():
+    env = Environment('<%', '%>', '${', '}', '<%#', '%>', '%')
+    tmpl = env.from_string(MAKO_SYNTAX)
+    assert [int(x.strip()) for x in tmpl.render(seq=range(5)).split()] == \
+           range(5)
