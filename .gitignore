@@ -44,4 +44,5 @@ jdk_demo
 requests
 *~
 
-jinja2/jinja2-2.0/.idea/
+jinja2/.idea
+jinja2/jinja2-2.0/.idea
