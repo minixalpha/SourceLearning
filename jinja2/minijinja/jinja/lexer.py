@@ -90,11 +90,12 @@ def get_tokens(source):
     if state_machine[state].get('eof') is 'bad':
         print('bad template: %s is not match'.format(state))
 
-    print(tokens)
+    return tokens
 
 
 if __name__ == '__main__':
     tsource = """<html>
     hi {{ user }}
 </html>"""
-    get_tokens(tsource)
+    tokens = get_tokens(tsource)
+    print(tokens)
