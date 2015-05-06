@@ -139,7 +139,6 @@ html 模板源代码会依次经过 environment, parser, lexer 模块，最终�
 ('}}', 'variable_end'), 
 
 ('\n</html>', 'data')
-
 ```
 
 每个 token 都由 (值，类型) 构成。
